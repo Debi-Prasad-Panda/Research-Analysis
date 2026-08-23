@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepPaper Studio — Neural Architecture Explorer</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- KaTeX CSS & JS for Math Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark">
+  <!-- App Layout -->
+  <div id="app" class="app-layout">
+    
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-badge">
+          <div class="logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <span class="brand-title">DeepPaper<span class="brand-accent">Studio</span></span>
+            <span class="brand-subtitle">Interactive Neural Architecture Explorer</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <!-- Global Paper Selection Tabs -->
+        <nav class="paper-nav-tabs" id="paperNavTabs" aria-label="Research Papers Navigation">
+          <!-- Rendered via JS -->
+        </nav>
+      </div>
+
+      <div class="header-right">
+        <!-- Progress Summary Badge -->
+        <div class="mastery-badge" id="masteryBadge" title="Overall Study Progress">
+          <span class="mastery-dot"></span>
+          <span id="masteryPercentText">0% Mastered</span>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="themeToggleBtn" class="icon-btn" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+          <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-viewport">
+      
+      <!-- Paper Hero Banner -->
+      <section class="paper-hero-card glass-panel" id="paperHeroCard">
+        <div class="hero-top-row">
+          <div class="hero-tags" id="heroTags">
+            <!-- Dynamically Rendered -->
+          </div>
+          <div class="hero-actions">
+            <button class="study-status-btn" id="paperStudyStatusBtn">
+              <span class="check-icon">✓</span>
+              <span id="paperStudyStatusText">Mark Paper as Mastered</span>
+            </button>
+          </div>
+        </div>
+
+        <h1 class="paper-title" id="paperTitle">Loading paper...</h1>
+        <p class="paper-authors" id="paperAuthors">Loading authors...</p>
+        
+        <div class="breakthrough-box">
+          <div class="breakthrough-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+            Core Innovation & Breakthrough
+          </div>
+          <p class="breakthrough-text" id="paperBreakthrough">Loading breakthrough...</p>
+        </div>
+      </section>
+
+      <!-- View Navigation Tabs -->
+      <div class="view-mode-bar">
+        <div class="view-tabs">
+          <button class="view-tab active" data-view="graphical-architecture">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+            Graphical Architecture Canvas
+          </button>
+          <button class="view-tab" data-view="layer-breakdown">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            All Micro-Layers & Equations
+          </button>
+          <button class="view-tab" data-view="pros-cons">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+            </svg>
+            Strengths & Limitations (Pros & Cons)
+          </button>
+          <button class="view-tab" data-view="reported-metrics">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            Reported Benchmarks
+          </button>
+          <button class="view-tab highlight-tab" data-view="model-comparison">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 3h5v5"></path>
+              <path d="M4 20L21 3"></path>
+              <path d="M21 16v5h-5"></path>
+              <path d="M15 15l6 6"></path>
+              <path d="M4 4l5 5"></path>
+            </svg>
+            ⚡ Cross-Model Comparison
+          </button>
+          <button class="view-tab highlight-tab-alt" data-view="complexity-simulator">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="10" x2="16" y2="10"></line>
+              <line x1="8" y1="14" x2="12" y2="14"></line>
+            </svg>
+            🎛️ Live Complexity Simulator
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 1: Graphical Architecture Canvas (Clickable Blocks with Visual Drill-Down) -->
+      <section class="content-view active" id="graphicalArchitectureView">
+        <div class="diagram-workbench glass-panel">
+          <div class="workbench-header">
+            <div class="workbench-title-group">
+              <span class="level-pill">Interactive Graphical Architecture</span>
+              <h2 class="workbench-title" id="diagramTitle">Model Architecture Diagram</h2>
+              <p class="workbench-subtitle">Click on <strong>any block</strong> in the diagram to enter inside its internal mechanism, KaTeX math formulations, tensor flows, and deep undertones.</p>
+            </div>
+            <div class="diagram-legend">
+              <span class="legend-item"><span class="legend-dot color-pink"></span> Embedding</span>
+              <span class="legend-item"><span class="legend-dot color-orange"></span> Attention / SSM</span>
+              <span class="legend-item"><span class="legend-dot color-yellow"></span> Norm / Gate</span>
+              <span class="legend-item"><span class="legend-dot color-blue"></span> Feed Forward</span>
+              <span class="legend-item"><span class="legend-dot color-purple"></span> Linear</span>
+              <span class="legend-item"><span class="legend-dot color-green"></span> Softmax / Act</span>
+            </div>
+          </div>
+
+          <!-- Interactive Canvas Action Toolbar -->
+          <div class="canvas-interactive-toolbar">
+            <div class="canvas-toolbar-left">
+              <button id="simulateFlowBtn" class="simulate-flow-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                <span>Simulate Token Flow</span>
+              </button>
+              <button id="expandAllCardsBtn" class="preset-btn" style="padding:0.45rem 0.85rem">
+                <span>Expand All Layers</span>
+              </button>
+            </div>
+            <div class="canvas-toolbar-right">
+              <span style="font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono)">Active Mode: Forward Inference Pass</span>
+            </div>
+          </div>
+
+          <!-- Dynamic SVG/HTML Graphical Diagram Container -->
+          <div class="diagram-canvas-viewport" id="diagramCanvasViewport">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: Complete Micro-Layers & Equations List -->
+      <section class="content-view" id="layerBreakdownView">
+        <div class="micro-layers-section" id="microLayersSection">
+          
+          <div class="section-header">
+            <div>
+              <span class="level-pill">Layer-by-Layer Catalog</span>
+              <h2 class="section-title" id="microSectionTitle">Micro-Layer Breakdown & Math Formulas</h2>
+            </div>
+            <p class="section-desc">Exhaustive mathematical formulations, concrete tensor dimensions, step-by-step pipeline flows, hardware execution notes, and PyTorch implementations for every layer.</p>
+          </div>
+
+          <!-- Dynamic Tensor Playground Toolbar -->
+          <div class="tensor-playground-toolbar">
+            <div class="tensor-toolbar-left">
+              <span class="tensor-toolbar-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="3" y1="9" x2="21" y2="9"></line>
+                  <line x1="9" y1="21" x2="9" y2="9"></line>
+                </svg>
+                Dynamic Tensor Shapes:
+              </span>
+              <div class="tensor-dimension-presets" id="tensorDimensionPresets">
+                <button class="tensor-preset-pill active" onclick="setTensorShapePreset(2, 2048)">B=2, L=2,048</button>
+                <button class="tensor-preset-pill" onclick="setTensorShapePreset(8, 4096)">B=8, L=4,096</button>
+                <button class="tensor-preset-pill" onclick="setTensorShapePreset(1, 32768)">B=1, L=32,768 (Long Context)</button>
+                <button class="tensor-preset-pill" onclick="setTensorShapePreset(16, 512)">B=16, L=512 (Batch Serving)</button>
+              </div>
+            </div>
+            <div class="tensor-live-dim-indicator" id="tensorLiveDimIndicator">
+              Active Dimensions: [Batch: 2, SeqLen: 2,048, Dim: 512]
+            </div>
+          </div>
+
+          <div class="layer-cards-grid" id="layerCardsGrid">
+            <!-- Dynamically Rendered Layer Cards -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: Pros & Cons View -->
+      <section class="content-view" id="prosConsView">
+        <div class="pros-cons-grid">
+          <div class="pros-card glass-panel">
+            <div class="pro-con-header pro-header">
+              <div class="pro-con-icon">✓</div>
+              <h3>Advantages & Core Strengths</h3>
+            </div>
+            <div class="pro-con-list" id="prosList">
+              <!-- Dynamically Rendered -->
+            </div>
+          </div>
+
+          <div class="cons-card glass-panel">
+            <div class="pro-con-header con-header">
+              <div class="pro-con-icon">✕</div>
+              <h3>Limitations & Architectural Bottlenecks</h3>
+            </div>
+            <div class="pro-con-list" id="consList">
+              <!-- Dynamically Rendered -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: Reported Empirical Benchmarks View -->
+      <section class="content-view" id="reportedMetricsView">
+        <div class="glass-panel metrics-panel">
+          <div class="section-header">
+            <div>
+              <span class="level-pill">Empirical Results</span>
+              <h2 class="section-title">Reported Benchmark Metrics (Primary Source Data)</h2>
+            </div>
+            <p class="section-desc">Static empirical benchmark numbers cited directly from tables and figures in the original paper.</p>
+          </div>
+
+          <div class="reported-metrics-table-wrapper">
+            <table class="styled-table" id="reportedMetricsTable">
+              <thead>
+                <tr>
+                  <th>Evaluation Task</th>
+                  <th>Metric Name</th>
+                  <th>Reported Value</th>
+                  <th>Primary Citation</th>
+                  <th>Context & Comparison</th>
+                </tr>
+              </thead>
+              <tbody id="reportedMetricsTableBody">
+                <!-- Dynamically Rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: Cross-Model Comparison Engine (Phase 3) -->
+      <section class="content-view" id="modelComparisonView">
+        <div class="glass-panel comparison-panel">
+          
+          <!-- Comparison Header & Model Selectors -->
+          <div class="comparison-control-bar">
+            <div class="comparison-title-wrap">
+              <span class="level-pill">Architecture Matchup Engine</span>
+              <h2 class="section-title">Cross-Model Layer-by-Layer & Trade-off Comparison</h2>
+              <p class="section-desc">Analyze structural mechanisms, computational complexities, advantages, and limitations between any two neural architectures.</p>
+            </div>
+            
+            <div class="comparison-selectors-row">
+              <div class="model-select-group">
+                <label for="compareModelASelect" class="selector-label">Model Architecture A</label>
+                <select id="compareModelASelect" class="model-dropdown">
+                  <!-- Options populated via JS -->
+                </select>
+              </div>
+
+              <div class="vs-badge">VS</div>
+
+              <div class="model-select-group">
+                <label for="compareModelBSelect" class="selector-label">Model Architecture B</label>
+                <select id="compareModelBSelect" class="model-dropdown">
+                  <!-- Options populated via JS -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="quick-presets-row">
+              <span class="preset-label">Quick Matchups:</span>
+              <button class="preset-btn" onclick="setComparisonPreset('transformer', 'mamba')">Transformer vs Mamba</button>
+              <button class="preset-btn" onclick="setComparisonPreset('transformer', 'mixture_of_depths')">Dense vs Mixture-of-Depths</button>
+              <button class="preset-btn" onclick="setComparisonPreset('transformer', 'moe_survey')">Dense vs Mixture of Experts</button>
+              <button class="preset-btn" onclick="setComparisonPreset('mamba', 'transmamba')">Pure Mamba vs TransMamba Hybrid</button>
+              <button class="preset-btn" onclick="setComparisonPreset('swat', 'titans')">Sliding Window vs Titans Memory</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Comparison Content Grid -->
+          <div class="comparison-body" id="comparisonBody">
+            <!-- Rendered dynamically via JS -->
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VIEW 6: Live Computational Complexity Simulator (Phase 4) -->
+      <section class="content-view" id="complexitySimulatorView">
+        <div class="glass-panel simulator-panel">
+          
+          <div class="section-header">
+            <div>
+              <span class="level-pill">Real-Time Scaling Simulator</span>
+              <h2 class="section-title">Quantitative Complexity & Hardware Resource Simulator</h2>
+            </div>
+            <p class="section-desc">Manipulate sequence length, hidden dimension, layers, and batch sizes in real time to simulate memory footprints, FLOPs, and latency scaling across models.</p>
+          </div>
+
+          <!-- Sliders Workbench -->
+          <div class="simulator-controls-grid">
+            
+            <div class="sim-control-card">
+              <div class="sim-control-header">
+                <label for="simSeqLen">Sequence Length ($L$ tokens)</label>
+                <span class="sim-val-badge" id="simSeqLenVal">4,096</span>
+              </div>
+              <input type="range" id="simSeqLen" min="128" max="131072" step="128" value="4096" class="sim-slider">
+              <div class="slider-ticks"><span>128</span><span>2k</span><span>8k</span><span>32k</span><span>128k</span></div>
+            </div>
+
+            <div class="sim-control-card">
+              <div class="sim-control-header">
+                <label for="simHiddenDim">Hidden Dimension ($D$ / $d_{model}$)</label>
+                <span class="sim-val-badge" id="simHiddenDimVal">4,096</span>
+              </div>
+              <input type="range" id="simHiddenDim" min="512" max="16384" step="512" value="4096" class="sim-slider">
+              <div class="slider-ticks"><span>512</span><span>2k</span><span>4k</span><span>8k</span><span>16k</span></div>
+            </div>
+
+            <div class="sim-control-card">
+              <div class="sim-control-header">
+                <label for="simNumLayers">Layer Count ($N$ layers)</label>
+                <span class="sim-val-badge" id="simNumLayersVal">32</span>
+              </div>
+              <input type="range" id="simNumLayers" min="4" max="128" step="2" value="32" class="sim-slider">
+              <div class="slider-ticks"><span>4</span><span>16</span><span>32</span><span>64</span><span>128</span></div>
+            </div>
+
+            <div class="sim-control-card">
+              <div class="sim-control-header">
+                <label for="simBatchSize">Inference Batch Size ($B$)</label>
+                <span class="sim-val-badge" id="simBatchSizeVal">8</span>
+              </div>
+              <input type="range" id="simBatchSize" min="1" max="128" step="1" value="8" class="sim-slider">
+              <div class="slider-ticks"><span>1</span><span>8</span><span>32</span><span>64</span><span>128</span></div>
+            </div>
+
+            <div class="sim-control-card">
+              <div class="sim-control-header">
+                <label for="simStateDim">SSM State Size ($N_{state}$)</label>
+                <span class="sim-val-badge" id="simStateDimVal">16</span>
+              </div>
+              <input type="range" id="simStateDim" min="4" max="128" step="4" value="16" class="sim-slider">
+              <div class="slider-ticks"><span>4</span><span>16</span><span>32</span><span>64</span><span>128</span></div>
+            </div>
+
+            <div class="sim-control-card">
+              <div class="sim-control-header">
+                <label for="simPrecision">Weight / Activation Precision</label>
+                <span class="sim-val-badge" id="simPrecisionVal">16-bit (2 Bytes)</span>
+              </div>
+              <select id="simPrecision" class="model-dropdown" style="margin-top:0.4rem;">
+                <option value="2" selected>FP16 / BF16 (2 Bytes)</option>
+                <option value="1">FP8 / INT8 (1 Byte)</option>
+                <option value="4">FP32 (4 Bytes)</option>
+              </select>
+            </div>
+
+          </div>
+
+          <!-- Section A: Computed Live Metrics Grid -->
+          <div class="sim-section-block">
+            <h3 class="sim-block-title">
+              <span class="live-dot"></span>
+              Live Computed Formulas (Dynamic JavaScript Physics Engine)
+            </h3>
+            <p class="sim-block-desc">Real-time calculations strictly derived from theoretical algorithmic scaling laws across architectures.</p>
+            
+            <div class="computed-cards-grid" id="computedMetricsGrid">
+              <!-- Dynamically populated via JS live formula engine -->
+            </div>
+          </div>
+
+          <!-- Live Memory & Scaling Visualization Bars -->
+          <div class="sim-section-block">
+            <h3 class="sim-block-title">KV Cache vs SSM State Memory Divergence (Live Scale)</h3>
+            <div class="memory-divergence-chart" id="memoryDivergenceChart">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- DRILL-DOWN LAYER INSPECTOR MODAL (Inside the Box Deep-Dive) -->
+    <div class="layer-modal-overlay" id="layerModalOverlay" aria-hidden="true">
+      <div class="layer-modal-dialog glass-panel" id="layerModalDialog">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-layer-badge" id="modalLayerBadge">Layer Detail</span>
+            <h3 class="modal-title" id="modalTitle">Layer Mechanism Deep Dive</h3>
+          </div>
+          <button class="modal-close-btn" id="closeLayerModalBtn" aria-label="Close modal">&times;</button>
+        </div>
+
+        <div class="modal-body" id="modalBody">
+          
+          <!-- Inner Mechanism Circuit Banner -->
+          <div class="inner-circuit-box">
+            <div class="circuit-header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>Inside the Mechanism (Inner Circuit)</span>
+            </div>
+            <p class="circuit-text" id="modalCircuitText">Internal operation description...</p>
+          </div>
+
+          <!-- Interactive Inner Circuit Diagram (Visual Flow) -->
+          <div class="modal-section inner-diagram-section" id="modalInnerDiagramContainer">
+            <!-- Rendered via JS: step-by-step internal architecture flow -->
+          </div>
+
+          <!-- Mathematical Formulations -->
+          <div class="modal-section" id="modalFormulaSection">
+            <h4 class="modal-section-title">Mathematical Formulation & Equations</h4>
+            <div class="katex-formula-box" id="modalFormulaBox">
+              <div id="modalFormulaContent">$$\text{Loading math...}$$</div>
+            </div>
+          </div>
+
+          <!-- Deep Undertones & Context -->
+          <div class="modal-section">
+            <h4 class="modal-section-title">Architectural Undertones & Insights</h4>
+            <div class="undertones-box" id="modalUndertonesText">
+              Deep insights into design decisions, failure modes, and hardware behavior.
+            </div>
+          </div>
+
+          <!-- Source Citation Footer -->
+          <div class="modal-footer-citation">
+            <span class="citation-label">Verified Paper Citation:</span>
+            <span class="citation-tag" id="modalCitationTag">Section 3.2</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Small Citation Floating Drawer -->
+    <div class="citation-drawer" id="citationDrawer" aria-hidden="true">
+      <div class="citation-drawer-content glass-panel">
+        <button class="close-drawer-btn" id="closeCitationDrawerBtn">&times;</button>
+        <div class="citation-badge-icon">📖</div>
+        <h4 id="citationDrawerTitle">Citation Source</h4>
+        <p id="citationDrawerText">Source citation text...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

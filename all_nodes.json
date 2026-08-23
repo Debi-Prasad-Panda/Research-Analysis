@@ -1,0 +1,306 @@
+{
+  "transformer": [
+    {
+      "id": "trans_inputs",
+      "label": "Inputs",
+      "color": "io"
+    },
+    {
+      "id": "trans_input_emb",
+      "label": "Input Embedding",
+      "color": "pink"
+    },
+    {
+      "id": "trans_pos_enc_enc",
+      "label": "Positional Encoding",
+      "color": "circle_wave"
+    },
+    {
+      "id": "trans_enc_mha",
+      "label": "Multi-Head Attention",
+      "color": "orange"
+    },
+    {
+      "id": "trans_enc_add_norm1",
+      "label": "Add & Norm",
+      "color": "yellow"
+    },
+    {
+      "id": "trans_enc_ffn",
+      "label": "Feed Forward",
+      "color": "blue"
+    },
+    {
+      "id": "trans_enc_add_norm2",
+      "label": "Add & Norm",
+      "color": "yellow"
+    },
+    {
+      "id": "trans_outputs",
+      "label": "Outputs (shifted right)",
+      "color": "io"
+    },
+    {
+      "id": "trans_output_emb",
+      "label": "Output Embedding",
+      "color": "pink"
+    },
+    {
+      "id": "trans_pos_enc_dec",
+      "label": "Positional Encoding",
+      "color": "circle_wave"
+    },
+    {
+      "id": "trans_dec_masked_mha",
+      "label": "Masked Multi-Head Attention",
+      "color": "orange"
+    },
+    {
+      "id": "trans_dec_add_norm1",
+      "label": "Add & Norm",
+      "color": "yellow"
+    },
+    {
+      "id": "trans_dec_cross_mha",
+      "label": "Multi-Head Cross-Attention",
+      "color": "orange"
+    },
+    {
+      "id": "trans_dec_add_norm2",
+      "label": "Add & Norm",
+      "color": "yellow"
+    },
+    {
+      "id": "trans_dec_ffn",
+      "label": "Feed Forward",
+      "color": "blue"
+    },
+    {
+      "id": "trans_dec_add_norm3",
+      "label": "Add & Norm",
+      "color": "yellow"
+    },
+    {
+      "id": "trans_linear",
+      "label": "Linear",
+      "color": "purple"
+    },
+    {
+      "id": "trans_softmax",
+      "label": "Softmax",
+      "color": "green"
+    },
+    {
+      "id": "trans_output_prob",
+      "label": "Output Probabilities",
+      "color": "io"
+    }
+  ],
+  "mamba": [
+    {
+      "id": "mamba_in",
+      "label": "Input Token x",
+      "color": "io"
+    },
+    {
+      "id": "mamba_expand_split",
+      "label": "Linear Expansion & Split",
+      "color": "purple"
+    },
+    {
+      "id": "mamba_conv1d",
+      "label": "1D Causal Conv (k=4)",
+      "color": "blue"
+    },
+    {
+      "id": "mamba_silu1",
+      "label": "SiLU Activation",
+      "color": "green"
+    },
+    {
+      "id": "mamba_param_gen",
+      "label": "Selective Parameter Gen (\u0394, B, C)",
+      "color": "orange"
+    },
+    {
+      "id": "mamba_discretize_scan",
+      "label": "ZOH Discretization & Parallel Scan (SSM Core)",
+      "color": "orange"
+    },
+    {
+      "id": "mamba_silu2",
+      "label": "Gate SiLU",
+      "color": "green"
+    },
+    {
+      "id": "mamba_mult_gate",
+      "label": "Hadamard Multiplier (\u2299)",
+      "color": "yellow"
+    },
+    {
+      "id": "mamba_linear_out",
+      "label": "Output Linear Projection",
+      "color": "purple"
+    },
+    {
+      "id": "mamba_res_add",
+      "label": "Residual Sum (+)",
+      "color": "yellow"
+    }
+  ],
+  "mixture_of_depths": [
+    {
+      "id": "mod_in",
+      "label": "Sequence Tokens X",
+      "color": "io"
+    },
+    {
+      "id": "mod_router",
+      "label": "Per-Token Router MLP (r_i)",
+      "color": "orange"
+    },
+    {
+      "id": "mod_topk",
+      "label": "Top-K Capacity Filter (C = c \u00b7 T)",
+      "color": "yellow"
+    },
+    {
+      "id": "mod_gather",
+      "label": "Tensor Gather (B, C, D)",
+      "color": "blue"
+    },
+    {
+      "id": "mod_compute_block",
+      "label": "Self-Attention / MLP Block",
+      "color": "pink"
+    },
+    {
+      "id": "mod_scatter_res",
+      "label": "Scatter + Pure Residual Skip",
+      "color": "green"
+    }
+  ],
+  "moe_survey": [
+    {
+      "id": "moe_in",
+      "label": "Input Token x",
+      "color": "io"
+    },
+    {
+      "id": "moe_router",
+      "label": "Gating Router Network (W_g)",
+      "color": "orange"
+    },
+    {
+      "id": "moe_shared_expert",
+      "label": "Dedicated Shared Expert (Always Active)",
+      "color": "pink"
+    },
+    {
+      "id": "moe_expert_bank",
+      "label": "Sparse Expert Bank (E_1, E_2, ..., E_N)",
+      "color": "blue"
+    },
+    {
+      "id": "moe_weighted_sum",
+      "label": "Weighted Combination & Combine Collective",
+      "color": "green"
+    }
+  ],
+  "swat": [
+    {
+      "id": "swat_in",
+      "label": "Input Sequence Tokens",
+      "color": "io"
+    },
+    {
+      "id": "swat_rope_alibi",
+      "label": "Dual Positional Engine (RoPE + Balanced ALiBi)",
+      "color": "pink"
+    },
+    {
+      "id": "swat_sigmoid_attn",
+      "label": "Independent Sigmoid Attention Scoring",
+      "color": "orange"
+    },
+    {
+      "id": "swat_sliding_cache",
+      "label": "Sliding Window KV Ring Buffer (Window W)",
+      "color": "blue"
+    },
+    {
+      "id": "swat_stacked_rf",
+      "label": "Multi-Scale Layer Receptive Field Stacking",
+      "color": "green"
+    }
+  ],
+  "titans": [
+    {
+      "id": "titans_in",
+      "label": "Input Sequence x_t",
+      "color": "io"
+    },
+    {
+      "id": "titans_nmm_loss",
+      "label": "Associative Memory Loss L_mem",
+      "color": "pink"
+    },
+    {
+      "id": "titans_surprise_grad",
+      "label": "Surprise Gradient Engine (g_t = \u2207L)",
+      "color": "orange"
+    },
+    {
+      "id": "titans_momentum_decay",
+      "label": "Surprise Momentum & Dynamic Decay (S_t, \u03b7_t)",
+      "color": "yellow"
+    },
+    {
+      "id": "titans_deep_mlp",
+      "label": "Deep Neural Long-Term Memory (NMM)",
+      "color": "blue"
+    },
+    {
+      "id": "titans_sw_attn",
+      "label": "Short-Term Sliding Window Attention",
+      "color": "orange"
+    },
+    {
+      "id": "titans_hyperhead",
+      "label": "Hyper-Head Integration (MAC / MAG / MAL)",
+      "color": "green"
+    }
+  ],
+  "transmamba": [
+    {
+      "id": "tm_in",
+      "label": "Input Token Sequence [x_1, ..., x_T]",
+      "color": "io"
+    },
+    {
+      "id": "tm_shared_w",
+      "label": "Unified Shared Projection Matrix (W_proj)",
+      "color": "pink"
+    },
+    {
+      "id": "tm_transpoint_router",
+      "label": "Sequence TransPoint Scheduler (N_trans)",
+      "color": "yellow"
+    },
+    {
+      "id": "tm_attn_mode",
+      "label": "Transformer Attention Regime (t \u2264 N_trans)",
+      "color": "orange"
+    },
+    {
+      "id": "tm_mcc_bridge",
+      "label": "Memory Compression Cache (MCC)",
+      "color": "blue"
+    },
+    {
+      "id": "tm_ssm_mode",
+      "label": "Mamba2 SSM Linear Scan Regime (t > N_trans)",
+      "color": "orange"
+    }
+  ]
+}
