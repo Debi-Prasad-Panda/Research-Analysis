@@ -1,0 +1,131 @@
+[
+  {
+    "paper_id": "transformer_2017",
+    "title": "Attention Is All You Need",
+    "authors_venue_year": "Vaswani et al., 2017, NeurIPS",
+    "core_breakthrough": "Scaled Dot-Product & Multi-Head Self-Attention eliminating recurrence and convolutions entirely.",
+    "layers": [
+      {
+        "layer_name": "Layer 1: Input Representation",
+        "sublayers": [
+          { "name": "Token Embedding", "formula_katex": "W_e \\in \\mathbb{R}^{V \\times d_{model}}", "explanation": "Converts discrete tokens into continuous vector representations.", "source_section": "Section 3.4" },
+          { "name": "Positional Encoding", "formula_katex": "PE_{(pos, 2i)} = \\sin(pos/10000^{2i/d_{model}})", "explanation": "Injects relative/absolute position info since the model has no recurrence.", "source_section": "Section 3.5" }
+        ]
+      },
+      {
+        "layer_name": "Layer 2: Encoder Block",
+        "sublayers": [
+          { "name": "Multi-Head Attention", "formula_katex": "\\text{Attn}(Q, K, V) = \\text{softmax}(\\frac{QK^T}{\\sqrt{d_k}})V", "explanation": "Allows the model to jointly attend to information from different representation subspaces.", "source_section": "Section 3.2.2" },
+          { "name": "Position-Wise FFN", "formula_katex": "\\text{FFN}(x) = \\max(0, xW_1 + b_1)W_2 + b_2", "explanation": "Applied to each position separately and identically.", "source_section": "Section 3.3" }
+        ]
+      }
+    ],
+    "pros": [{ "claim": "Parallelizable training", "source_section": "Section 1" }],
+    "cons": [{ "claim": "Quadratic complexity w.r.t sequence length", "source_section": "Section 4" }],
+    "computed_metric_role": "transformer"
+  },
+  {
+    "paper_id": "mamba_2023",
+    "title": "Mamba: Linear-Time Sequence Modeling",
+    "authors_venue_year": "Gu & Dao, 2023",
+    "core_breakthrough": "Selective state space mechanism (S6) with hardware-aware parallel scan.",
+    "layers": [
+      {
+        "layer_name": "Layer 3: Selective SSM",
+        "sublayers": [
+          { "name": "Selection Mechanism", "formula_katex": "\\Delta_t = \\text{softplus}(\\text{Linear}(x_t))", "explanation": "Makes the SSM parameters input-dependent, allowing the model to filter/remember info.", "source_section": "Section 3" },
+          { "name": "Parallel Scan", "formula_katex": "h_t = \\bar{A}_t h_{t-1} + \\bar{B}_t x_t", "explanation": "Hardware-aware associative scan for linear-time recurrent computation.", "source_section": "Section 4" }
+        ]
+      }
+    ],
+    "pros": [{ "claim": "Linear scaling with sequence length", "source_section": "Abstract" }],
+    "cons": [{ "claim": "Hardware-specific implementation (SRAM fusion) required for speed", "source_section": "Section 4" }],
+    "computed_metric_role": "mamba"
+  },
+  {
+    "paper_id": "mod_2024",
+    "title": "Mixture-of-Depths",
+    "authors_venue_year": "Raposo et al., Google DeepMind, 2024",
+    "core_breakthrough": "Dynamic per-token compute routing with top-k capacity budget.",
+    "layers": [
+      {
+        "layer_name": "Layer 2: Top-K Selection",
+        "sublayers": [
+          { "name": "Router Scoring", "formula_katex": "r_i = w_r^T x_i", "explanation": "Assigns a score to each token to determine if it should be processed.", "source_section": "Section 2.1" },
+          { "name": "Capacity Filtering", "formula_katex": "C = \\lfloor c \\cdot T \\rfloor", "explanation": "Only the top-k tokens are processed, others skip via residual.", "source_section": "Section 2.2" }
+        ]
+      }
+    ],
+    "pros": [{ "claim": "Reduced FLOPs without performance loss", "source_section": "Abstract" }],
+    "cons": [{ "claim": "Routing complexity and load balancing", "source_section": "Section 3" }],
+    "computed_metric_role": "mod"
+  },
+  {
+    "paper_id": "moe_survey_2024",
+    "title": "A Comprehensive Survey of MoE",
+    "authors_venue_year": "Mu & Lin, 2024",
+    "core_breakthrough": "Taxonomy of sparse gating and expert architectures.",
+    "layers": [
+      {
+        "layer_name": "Layer 1: Gating Network",
+        "sublayers": [
+          { "name": "Sparse Gating", "formula_katex": "G(x) = \\text{Softmax}(\\text{TopK}(g(x), k))", "explanation": "Activates only a subset of experts per token.", "source_section": "Section 2.1" }
+        ]
+      }
+    ],
+    "pros": [{ "claim": "High parameter count with low active compute", "source_section": "Introduction" }],
+    "cons": [{ "claim": "High memory overhead for expert storage", "source_section": "Section 5" }],
+    "computed_metric_role": "moe"
+  },
+  {
+    "paper_id": "swat_2025",
+    "title": "Sliding Window Attention Training (SWAT)",
+    "authors_venue_year": "Fu et al., 2025/2026",
+    "core_breakthrough": "Sigmoid attention + balanced ALiBi/RoPE for long-context.",
+    "layers": [
+      {
+        "layer_name": "Layer 1: Sigmoid Attention",
+        "sublayers": [
+          { "name": "Activation", "formula_katex": "\\text{Attn} = \\text{Sigmoid}(\\frac{QK^T}{\\sqrt{d_k}})V", "explanation": "Eliminates softmax normalization sinks for better stability.", "source_section": "Section 3" }
+        ]
+      }
+    ],
+    "pros": [{ "claim": "Stable training for extreme context lengths", "source_section": "Section 1" }],
+    "cons": [{ "claim": "Departure from standard softmax KV management", "source_section": "Section 4" }],
+    "computed_metric_role": "sliding_window"
+  },
+  {
+    "paper_id": "titans_2024",
+    "title": "Titans: Learning to Memorize",
+    "authors_venue_year": "Google Research, 2024/2025",
+    "core_breakthrough": "Test-time gradient descent on associative neural memory.",
+    "layers": [
+      {
+        "layer_name": "Layer 1: Neural Memory",
+        "sublayers": [
+          { "name": "Surprise Gradient", "formula_katex": "g_t = \\nabla_{M_t} \\mathcal{L}_{mem}", "explanation": "Updates memory based on how 'surprising' the input is.", "source_section": "Section 2" }
+        ]
+      }
+    ],
+    "pros": [{ "claim": "Infinite-ish memory via weight updates", "source_section": "Abstract" }],
+    "cons": [{ "claim": "Test-time update latency", "source_section": "Section 5" }],
+    "computed_metric_role": "neural_memory"
+  },
+  {
+    "paper_id": "transmamba_2026",
+    "title": "TransMamba: Hybrid Transformer-Mamba",
+    "authors_venue_year": "Tencent Hunyuan, AAAI 2026",
+    "core_breakthrough": "Sequence-level switching with shared projection matrices.",
+    "layers": [
+      {
+        "layer_name": "Layer 1: Shared Projections",
+        "sublayers": [
+          { "name": "Unified Matrix", "formula_katex": "[Q,K,V] \\leftrightarrow [C,B,x]", "explanation": "Zero overhead parameter sharing between attn and SSM.", "source_section": "Section 3.1" }
+        ]
+      }
+    ],
+    "pros": [{ "claim": "Best of both worlds: recall + linear throughput", "source_section": "Abstract" }],
+    "cons": [{ "claim": "Complexity in routing at sequence level", "source_section": "Section 4" }],
+    "computed_metric_role": "hybrid"
+  }
+]
