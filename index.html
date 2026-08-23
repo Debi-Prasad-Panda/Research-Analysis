@@ -154,7 +154,7 @@
           
           <div class="hero-stats-grid">
             <div class="stat-box">
-              <span class="stat-number">7</span>
+              <span class="stat-number">8</span>
               <span class="stat-label">Architectures</span>
             </div>
             <div class="stat-box">
@@ -175,13 +175,14 @@
         <!-- Filter & Search Controls -->
         <section class="home-filter-section">
           <div class="filter-pills-bar" id="homeFilterPills">
-            <button class="filter-pill active" data-filter="all">All Models (7)</button>
+            <button class="filter-pill active" data-filter="all">All Models (8)</button>
             <button class="filter-pill" data-filter="attention">Attention-Based</button>
             <button class="filter-pill" data-filter="ssm">State Space (SSM)</button>
             <button class="filter-pill" data-filter="mod">Dynamic Routing (MoD)</button>
             <button class="filter-pill" data-filter="moe">Mixture of Experts</button>
             <button class="filter-pill" data-filter="long-context">Long-Context (SWAT)</button>
             <button class="filter-pill" data-filter="memory">Neural Memory (Titans)</button>
+            <button class="filter-pill" data-filter="cnn">Edge Vision (P100SuperCNN)</button>
           </div>
         </section>
 
@@ -245,6 +246,10 @@
             <button class="view-tab" data-subview="reported-benchmarks">
               <span class="material-symbols-outlined text-[18px]">leaderboard</span>
               Reported Benchmarks
+            </button>
+            <button class="view-tab" data-subview="poster-analytics">
+              <span class="material-symbols-outlined text-[18px]">biotech</span>
+              Poster & Vulnerability Analysis
             </button>
           </div>
         </div>
@@ -387,6 +392,13 @@
                 </tbody>
               </table>
             </div>
+          </div>
+        </section>
+
+        <!-- SUBVIEW 5: Poster & Vulnerability Analysis -->
+        <section class="explorer-subview" id="subview-poster-analytics">
+          <div class="poster-analytics-wrapper" id="posterAnalyticsContainer">
+            <!-- Dynamically Rendered via JS based on Active Paper -->
           </div>
         </section>
       </main>

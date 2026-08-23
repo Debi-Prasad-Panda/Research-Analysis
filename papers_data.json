@@ -1682,5 +1682,262 @@
         }
       ]
     }
+  },
+  {
+    "paper_id": "p100supercnn",
+    "title": "P100SuperCNN: An Efficient Deep Learning Model for Image Classification on Resource Constrained Environment",
+    "model_name": "P100SuperCNN",
+    "authors_venue_year": "Debi Prasad Panda and Pratik Kiran Rout (Department of CSE & IT, GITA, Bhubaneswar, Odisha)",
+    "core_breakthrough": "A bespoke parameter-efficient hierarchical CNN combining MBConvSD (Inverted Residuals + Stochastic Depth), Squeeze-and-Excitation (SE) channel attention, and 3-stage progressive augmentation to achieve state-of-the-art accuracy on CIFAR-100 with only 4.03M parameters (15.4 MB footprint, 26% higher parameter efficiency than EfficientNet-B0 and 66% smaller than ResNet-18).",
+    "computed_metric_role": "cnn_edge",
+    "layers": [
+      {
+        "layer_name": "Lightweight Stem Conv Layer",
+        "sublayers": [
+          {
+            "name": "Standard 3x3 Convolution Stem",
+            "formula_katex": "Y_{stem} = \\text{Swish}(\\text{BatchNorm}(\\text{Conv2D}(X, W_{stem}, \\text{stride}=1, \\text{padding}=1)))",
+            "explanation": "Initial lightweight spatial feature extraction converting 3-channel RGB image (32x32x3) into 32 high-dimensional feature maps (32x32x32) with zero spatial resolution downsampling.",
+            "source_section": "Poster: Core Architecture & Stem",
+            "in_shape": "(B, 3, 32, 32)",
+            "out_shape": "(B, 32, 32, 32)",
+            "math_breakdown": "3x3 kernel sliding across RGB channels: FLOPs = 2 * 3 * 32 * 32 * 32 * 3^2 = 1.77 MFLOPs. Captures low-level spatial edges and color textures.",
+            "hyperparameters": [
+              { "param": "C_in", "val": "3", "desc": "RGB channels" },
+              { "param": "C_out", "val": "32", "desc": "Stem output channels" },
+              { "param": "Kernel", "val": "3x3", "desc": "Filter size" }
+            ],
+            "hardware_notes": "Extremely memory efficient on microcontrollers; preserves full spatial resolution for fine-grained CIFAR-100 classification.",
+            "failure_modes": "Using stride=2 in stem causes aggressive early spatial loss on small 32x32 images, degrading classification accuracy.",
+            "pytorch_code": "self.stem = nn.Sequential(\n    nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1, bias=False),\n    nn.BatchNorm2d(32),\n    nn.SiLU(inplace=True)\n)"
+          }
+        ],
+        "tensor_in": "(B, 3, 32, 32)",
+        "tensor_out": "(B, 32, 32, 32)",
+        "flops_weight": "O(H · W · C_in · C_out · K^2)",
+        "memory_weight": "O(B · C · H · W)"
+      },
+      {
+        "layer_name": "7-Stage MBConvSD Body (86.6% Params)",
+        "sublayers": [
+          {
+            "name": "1x1 Pointwise Expansion Conv",
+            "formula_katex": "X_{exp} = \\text{Swish}(\\text{BatchNorm}(\\text{Conv1x1}(X_{in}, W_{exp}))) \\quad (C \\rightarrow t \\cdot C, \\; t=4 \\text{ to } 6)",
+            "explanation": "Expands input channel dimension by expansion factor t into a higher-dimensional representation space before spatial filtering.",
+            "source_section": "Poster: Core Component - The MBConvSD Block",
+            "in_shape": "(B, C, H, W)",
+            "out_shape": "(B, t*C, H, W)",
+            "math_breakdown": "1x1 linear matrix multiplication across channels. Inverts traditional bottleneck structure by expanding rather than compressing channels.",
+            "hyperparameters": [
+              { "param": "t", "val": "4 - 6", "desc": "Expansion factor" },
+              { "param": "Params", "val": "86.6%", "desc": "Body parameter concentration" }
+            ],
+            "hardware_notes": "Compute-bound GEMM operation well optimized on mobile NPUs and edge DSPs.",
+            "failure_modes": "Excessive expansion factors (t > 8) blow up SRAM activation memory on edge microcontrollers.",
+            "pytorch_code": "self.expand_conv = nn.Sequential(\n    nn.Conv2d(in_c, expanded_c, 1, bias=False),\n    nn.BatchNorm2d(expanded_c),\n    nn.SiLU(inplace=True)\n)"
+          },
+          {
+            "name": "3x3 Depthwise Separable Convolution",
+            "formula_katex": "X_{dw} = \\text{Swish}(\\text{BatchNorm}(\\text{DepthwiseConv3x3}(X_{exp}, W_{dw})))",
+            "explanation": "Applies a separate 3x3 spatial filter per expanded channel independently, decoupling spatial filtering from channel mixing.",
+            "source_section": "Poster: Convolution Strategy",
+            "in_shape": "(B, t*C, H, W)",
+            "out_shape": "(B, t*C, H', W')",
+            "math_breakdown": "Computes 1 filter per channel. Computation cost is only 1/C_out of standard convolution (8x-9x FLOPs reduction).",
+            "hyperparameters": [
+              { "param": "Groups", "val": "t*C", "desc": "Depthwise groups" },
+              { "param": "Stride", "val": "1 or 2", "desc": "Spatial downsampling stride" }
+            ],
+            "hardware_notes": "High arithmetic intensity when fused with BatchNorm and activation in hardware registers.",
+            "failure_modes": "Standard non-depthwise convolutions require 9x more FLOPs and exceed edge memory budgets.",
+            "pytorch_code": "self.dw_conv = nn.Sequential(\n    nn.Conv2d(expanded_c, expanded_c, 3, stride=stride, padding=1, groups=expanded_c, bias=False),\n    nn.BatchNorm2d(expanded_c),\n    nn.SiLU(inplace=True)\n)"
+          },
+          {
+            "name": "Squeeze-and-Excitation (SE) Attention",
+            "formula_katex": "\\mathbf{z} = \\text{GAP}(X_{dw}), \\quad \\mathbf{s} = \\sigma(W_2 \\cdot \\text{Swish}(W_1 \\mathbf{z})), \\quad X_{se} = \\mathbf{s} \\odot X_{dw}",
+            "explanation": "Lightweight channel-wise attention mechanism: squeezes spatial feature maps into 1D channel descriptors via Global Average Pooling, then learns non-linear inter-channel dependencies via two FC layers with reduction ratio r=4.",
+            "source_section": "Poster: Squeeze-and-Excitation (SE) Attention",
+            "in_shape": "(B, t*C, H, W)",
+            "out_shape": "(B, t*C, H, W)",
+            "math_breakdown": "Global pooling z_c = 1/(H*W) sum(X_{c,i,j}). Gating s = sigmoid(W2 * SiLU(W1 * z)). Recalibrates channel weights to amplify informative features and suppress noise.",
+            "hyperparameters": [
+              { "param": "r", "val": "4", "desc": "Channel reduction ratio" },
+              { "param": "Overhead", "val": "< 1.5%", "desc": "Parameter footprint increase" }
+            ],
+            "hardware_notes": "Negligible FLOPs and parameter cost (<1.5% parameters) with significant accuracy boost on fine-grained classes.",
+            "failure_modes": "Setting reduction ratio r too high (e.g. r=16) loses inter-channel nuance; setting r=1 causes parameter bloat.",
+            "pytorch_code": "z = x.mean((2, 3), keepdim=True)\ns = torch.sigmoid(self.fc2(F.silu(self.fc1(z))))\nx = x * s"
+          },
+          {
+            "name": "1x1 Linear Pointwise Projection",
+            "formula_katex": "X_{proj} = \\text{BatchNorm}(\\text{Conv1x1}(X_{se}, W_{proj}))",
+            "explanation": "Projects expanded channel representations back to the low-dimensional output space without non-linear activation.",
+            "source_section": "Poster: MBConv Block",
+            "in_shape": "(B, t*C, H, W)",
+            "out_shape": "(B, C_{out}, H, W)",
+            "math_breakdown": "Linear bottleneck projection. Removing non-linear activation (no ReLU/Swish here) prevents manifold collapse in low-dimensional output space.",
+            "hyperparameters": [
+              { "param": "Activation", "val": "None (Linear)", "desc": "Preserves low-dim information" }
+            ],
+            "hardware_notes": "Ensures compact representation passed across memory cache lines to the next stage.",
+            "failure_modes": "Adding non-linear activation after low-dim projection destroys representation manifolds.",
+            "pytorch_code": "self.proj_conv = nn.Sequential(\n    nn.Conv2d(expanded_c, out_c, 1, bias=False),\n    nn.BatchNorm2d(out_c)\n)"
+          },
+          {
+            "name": "DropPath (Stochastic Depth) & Inverted Residual",
+            "formula_katex": "Y = X_{in} + \\text{DropPath}(X_{proj}, p_{survival}) \\quad (\\text{when } \\text{stride}=1, C_{in}=C_{out})",
+            "explanation": "Randomly drops entire residual paths with linear decay probability during training, regularizing deep subnetworks and preventing co-adaptation.",
+            "source_section": "Poster: DropPath Regularization",
+            "in_shape": "(B, C_{out}, H, W)",
+            "out_shape": "(B, C_{out}, H, W)",
+            "math_breakdown": "DropPath Bernoulli mask M ~ Bern(p). Y = X_{in} + (M/p) * X_{proj}. Inverted residual bypass creates direct gradient highways across the 7 stages.",
+            "hyperparameters": [
+              { "param": "p_drop", "val": "0.0 - 0.2", "desc": "Linear stochastic depth decay" }
+            ],
+            "hardware_notes": "Zero runtime overhead during inference (DropPath disabled, identity addition fused).",
+            "failure_modes": "Static high drop rates cause underfitting; static zero drop rates cause overfitting on CIFAR-100.",
+            "pytorch_code": "if self.use_res_connect:\n    x = x_in + self.drop_path(x_proj)\nelse:\n    x = x_proj"
+          }
+        ],
+        "tensor_in": "(B, 32, 32, 32)",
+        "tensor_out": "(B, 320, 4, 4)",
+        "flops_weight": "O(sum_i H_i · W_i · C_i · (t_i + K^2 + 1))",
+        "memory_weight": "O(B · C_max · H · W)"
+      },
+      {
+        "layer_name": "TheHead (Final Classification Funnel)",
+        "sublayers": [
+          {
+            "name": "Layer 18: 1x1 Expansion Convolution",
+            "formula_katex": "X_{head} = \\text{Swish}(\\text{BatchNorm}(\\text{Conv1x1}(X_{body}, W_{head}))) \\quad (320 \\rightarrow 1280 \\text{ channels})",
+            "explanation": "Expands final 320 feature channels to 1,280 rich semantic channels before spatial pooling.",
+            "source_section": "Poster: TheHead (Final Classification)",
+            "in_shape": "(B, 320, 4, 4)",
+            "out_shape": "(B, 1280, 4, 4)",
+            "math_breakdown": "1x1 conv mapping 320 channels to 1280 channels at 4x4 spatial resolution.",
+            "hyperparameters": [
+              { "param": "C_in", "val": "320", "desc": "Stage 7 output" },
+              { "param": "C_out", "val": "1280", "desc": "Head semantic feature size" }
+            ],
+            "hardware_notes": "Provides high-dimensional linearly separable feature space for the classifier.",
+            "failure_modes": "Direct pooling from 320 channels reduces representational capacity for 100 fine-grained classes.",
+            "pytorch_code": "self.head_conv = nn.Sequential(\n    nn.Conv2d(320, 1280, 1, bias=False),\n    nn.BatchNorm2d(1280),\n    nn.SiLU(inplace=True)\n)"
+          },
+          {
+            "name": "Layer 19: Global Average Pooling (GAP)",
+            "formula_katex": "\\mathbf{v}_{gap} = \\frac{1}{H \\cdot W} \\sum_{i=1}^H \\sum_{j=1}^W X_{head}[:, :, i, j] \\quad (4 \\times 4 \\rightarrow 1 \\times 1)",
+            "explanation": "Collapses 4x4 spatial dimensions into a single 1,280-dimensional feature vector per image, eliminating spatial parameters.",
+            "source_section": "Poster: Global average pooling (GAP)",
+            "in_shape": "(B, 1280, 4, 4)",
+            "out_shape": "(B, 1280)",
+            "math_breakdown": "Averages all 16 spatial pixels per channel. Parameter-free operation eliminating millions of dense FC weights (vs traditional AlexNet/VGG FC layers).",
+            "hyperparameters": [
+              { "param": "Params", "val": "0", "desc": "Parameter-free spatial reduction" }
+            ],
+            "hardware_notes": "Fast reduction kernel with minimal latency and zero weight memory footprint.",
+            "failure_modes": "Using Flatten() instead of GAP causes parameter explosion from 4.03M to >25M weights.",
+            "pytorch_code": "v = F.adaptive_avg_pool2d(x, (1, 1)).flatten(1)"
+          },
+          {
+            "name": "Layer 20: Classifier Dropout Regularization",
+            "formula_katex": "\\tilde{\\mathbf{v}} = \\text{Dropout}(\\mathbf{v}_{gap}, P_{drop}=0.2)",
+            "explanation": "Regularizes final 1,280-dimensional feature vector with 20% dropout probability before class logit projection.",
+            "source_section": "Poster: TheHead - Layer 20 Dropout",
+            "in_shape": "(B, 1280)",
+            "out_shape": "(B, 1280)",
+            "math_breakdown": "Randomly deactivates 20% of features during training to prevent class memorization on CIFAR-100.",
+            "hyperparameters": [
+              { "param": "P_drop", "val": "0.2", "desc": "Head dropout rate" }
+            ],
+            "hardware_notes": "Disabled during inference; features pass at full fidelity.",
+            "failure_modes": "Omitting dropout leads to classifier overfitting on subtle CIFAR-100 background artifacts.",
+            "pytorch_code": "v = self.dropout(v)"
+          },
+          {
+            "name": "Layer 21: Linear Layer Classifier",
+            "formula_katex": "\\mathbf{y}_{logits} = W_{fc} \\tilde{\\mathbf{v}} + \\mathbf{b} \\quad (1280 \\rightarrow 100 \\text{ CIFAR-100 Classes})",
+            "explanation": "Final dense linear projection producing unnormalized class logit scores for all 100 fine-grained CIFAR-100 categories.",
+            "source_section": "Poster: TheHead - Layer 21 Linear Layer",
+            "in_shape": "(B, 1280)",
+            "out_shape": "(B, 100)",
+            "math_breakdown": "Matrix multiplication: (B, 1280) x (1280, 100) -> (B, 100) logits. Parameter count = 1280 * 100 + 100 = 128,100 parameters.",
+            "hyperparameters": [
+              { "param": "Num_Classes", "val": "100", "desc": "CIFAR-100 categories" }
+            ],
+            "hardware_notes": "Single GEMM multiplication on output logits.",
+            "failure_modes": "Improper weight initialization causes initial class prediction skew.",
+            "pytorch_code": "logits = self.classifier(v)"
+          }
+        ],
+        "tensor_in": "(B, 320, 4, 4)",
+        "tensor_out": "(B, 100)",
+        "flops_weight": "O(B · C · (H · W + Num_Classes))",
+        "memory_weight": "O(B · Num_Classes)"
+      }
+    ],
+    "pros": [
+      {
+        "claim": "Elite Parameter Efficiency (Score: 18.3 vs 14.5 for EfficientNet-B0)",
+        "detail": "Achieves 26% higher parameter efficiency than EfficientNet-B0 and 32% higher efficiency than MobileNetV3-Large on fine-grained CIFAR-100 classification.",
+        "section": "Poster: Efficiency & Performance Benchmarks"
+      },
+      {
+        "claim": "Ultra-Low Deployment Footprint (15.4 MB Storage, 4.03M Params)",
+        "detail": "Model size is 15.4 MB (66% smaller than ResNet-18 at 44.7 MB and 25% smaller than MobileNetV3-Large at 20.6 MB), ideal for on-device and edge microcontrollers.",
+        "section": "Poster: Deployment Footprint"
+      },
+      {
+        "claim": "3-Stage Progressive Augmentation (+2.91% Accuracy Gain)",
+        "detail": "Curriculum-based augmentation schedule stabilizes early training and maximizes generalization, boosting accuracy from 70.8% to 73.71%.",
+        "section": "Poster: Progressive Augmentation Strategy"
+      },
+      {
+        "claim": "Concentrated 86.6% Parameter Allocation in MBConvSD Blocks",
+        "detail": "Avoids wasteful parameter bloat in stem and head; focuses 86.6% of weights where depthwise feature extraction and SE channel recalibration occur.",
+        "section": "Poster: A Parameter-Efficient CNN Architecture"
+      }
+    ],
+    "cons": [
+      {
+        "claim": "Higher Memory Bandwidth Pressure from Depthwise Kernels on Legacy Hardware",
+        "detail": "Depthwise convolutions have lower arithmetic intensity (FLOPs/byte) than dense GEMM, requiring modern mobile DSP/NPU runtimes for maximum speedup.",
+        "section": "Poster: Core Architecture"
+      },
+      {
+        "claim": "Fixed 32x32 Input Receptive Field Optimization",
+        "detail": "Specifically architecturalized and tuned for CIFAR-100 resolution; requires stem adaptation for higher resolution ImageNet (224x224) inputs.",
+        "section": "Poster: Introduction & CIFAR-100 Constraints"
+      }
+    ],
+    "reported_benchmarks": [
+      {
+        "task": "Parameter Efficiency Score (Accuracy / MParams)",
+        "metric_name": "Efficiency Ratio",
+        "score_value": "18.32",
+        "source_section": "Poster: Efficiency & Performance Benchmarks",
+        "comparison_context": "26% higher than EfficientNet-B0 (14.5) and 32% higher than MobileNetV3-Large (13.9)"
+      },
+      {
+        "task": "CIFAR-100 Top-1 Classification Accuracy",
+        "metric_name": "Accuracy",
+        "score_value": "73.71%",
+        "source_section": "Poster: Progressive Augmentation Strategy",
+        "comparison_context": "+2.91% improvement over static augmentation baseline (70.80%)"
+      },
+      {
+        "task": "Model Parameter Footprint",
+        "metric_name": "Parameters",
+        "score_value": "4.03 M",
+        "source_section": "Poster: Model Parameters Comparison",
+        "comparison_context": "25% smaller than MobileNetV3 (5.40M) and 66% smaller than ResNet-18 (11.70M)"
+      },
+      {
+        "task": "On-Device Storage Size (MB)",
+        "metric_name": "Model Size",
+        "score_value": "15.4 MB",
+        "source_section": "Poster: Deployment Footprint",
+        "comparison_context": "vs 44.7 MB (ResNet-18), 20.6 MB (MobileNetV3), 20.2 MB (EfficientNet-B0)"
+      }
+    ]
   }
 ]
