@@ -275,7 +275,8 @@
                   <span class="material-symbols-outlined text-[16px]">play_arrow</span>
                   <span>Simulate Token Flow</span>
                 </button>
-                <button id="expandAllCardsBtn" class="preset-btn">
+                <button id="expandAllCardsBtn" class="preset-btn expand-all-btn" onclick="handleCanvasExpandAll()" style="display: flex; align-items: center; gap: 0.35rem;">
+                  <span class="material-symbols-outlined text-[16px]">unfold_more</span>
                   <span>Expand All Layers</span>
                 </button>
               </div>
@@ -317,8 +318,14 @@
                   <button class="tensor-preset-pill" onclick="setTensorShapePreset(16, 512)">B=16, L=512 (Batch Serving)</button>
                 </div>
               </div>
-              <div class="tensor-live-dim-indicator" id="tensorLiveDimIndicator">
-                Active Dimensions: [Batch: 2, SeqLen: 2,048, Dim: 512]
+              <div class="tensor-toolbar-right" style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="tensor-live-dim-indicator" id="tensorLiveDimIndicator">
+                  Active Dimensions: [Batch: 2, SeqLen: 2,048, Dim: 512]
+                </div>
+                <button id="expandAllMicroLayersBtn" class="preset-btn expand-all-btn" onclick="toggleAllMacroCards()" style="display: flex; align-items: center; gap: 0.35rem;">
+                  <span class="material-symbols-outlined text-[16px]">unfold_more</span>
+                  <span>Expand All Layers</span>
+                </button>
               </div>
             </div>
 

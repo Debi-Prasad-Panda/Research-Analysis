@@ -533,11 +533,43 @@ function runTokenFlowSimulation() {
 }
 
 // Toggle Macro-Layer Cards Expand / Collapse All
-function toggleAllMacroCards() {
+function toggleAllMacroCards(forceState) {
   const cards = document.querySelectorAll('.layer-card');
+  if (!cards.length) return;
+
   const anyCollapsed = Array.from(cards).some(c => c.classList.contains('collapsed'));
-  cards.forEach(card => card.classList.toggle('collapsed', !anyCollapsed));
+  const shouldExpand = (typeof forceState === 'boolean') ? forceState : anyCollapsed;
+
+  cards.forEach(card => {
+    card.classList.toggle('collapsed', !shouldExpand);
+  });
+
+  // Update button texts and icons
+  document.querySelectorAll('.expand-all-btn').forEach(btn => {
+    const span = btn.querySelector('span:last-child') || btn;
+    if (span) span.textContent = shouldExpand ? 'Collapse All Layers' : 'Expand All Layers';
+    const icon = btn.querySelector('.material-symbols-outlined');
+    if (icon) icon.textContent = shouldExpand ? 'unfold_less' : 'unfold_more';
+  });
 }
+
+// Handle Canvas Expand All: switch to Micro-Layers tab and expand all
+function handleCanvasExpandAll() {
+  const layerTab = document.querySelector('.view-tab[data-subview="layer-breakdown"]');
+  if (layerTab) {
+    layerTab.click();
+  }
+  setTimeout(() => {
+    toggleAllMacroCards(true);
+    const section = document.getElementById('microLayersSection');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, 50);
+}
+
+window.toggleAllMacroCards = toggleAllMacroCards;
+window.handleCanvasExpandAll = handleCanvasExpandAll;
 
 // Dynamic Tensor Dimension Calculator
 function setTensorShapePreset(b, l) {
